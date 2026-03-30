@@ -1,28 +1,31 @@
-module "s3" {
+locals {
+  name = "DEV-forbee"
+}
 
-  source      = "../../modules/s3"
-  name = "forbee-bucket"
+module "s3" {
+  source = "../../modules/s3"
+  name   = "${local.name}-bucket"
 }
 
 module "dynamodb" {
-  source              = "../../modules/dynamodb"
-  name = "forbee-table"
+  source = "../../modules/dynamodb"
+  name   = "${local.name}-table"
 }
 
 module "lambda" {
-  source               = "../../modules/lambda"
-  name = "forbee-lambda"
-  handler       = "index.handler"
-  runtime              = "python3.13"
-  zip_filename         = "./src/dummy.zip"
+  source       = "../../modules/lambda"
+  name         = "${local.name}-lambda"
+  handler      = "index.handler"
+  runtime      = "python3.13"
+  zip_filename = "./src/dummy.zip"
 }
 
 module "sqs" {
   source     = "../../modules/sqs"
-  queue_name = "forbee-queue"
+  queue_name = "${local.name}-queue"
 }
 
 module "api_gateway" {
-  source       = "../../modules/api_gateway"
-  name = "forbee-api-gateway"
+  source = "../../modules/api_gateway"
+  name   = "${local.name}-api-gateway"
 }

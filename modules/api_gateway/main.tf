@@ -16,5 +16,5 @@ resource "aws_api_gateway_method" "health_get" {
 }
 
 # resource "aws_api_gateway_integration" "name" {
-  
+
 # }
