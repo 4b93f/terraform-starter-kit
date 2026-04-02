@@ -1,4 +1,4 @@
-# terraform-starter-kit
+# terraform-starter-kit (WIP)
 
 A Terraform starter kit for deploying a serverless AWS stack.
 
