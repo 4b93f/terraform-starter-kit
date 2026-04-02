@@ -1,5 +1,5 @@
 locals {
-  name = "DEV-forbee"
+  name = "dev-forbee"
 }
 
 module "s3" {
@@ -21,11 +21,14 @@ module "lambda" {
 }
 
 module "sqs" {
-  source     = "../../modules/sqs"
-  queue_name = "${local.name}-queue"
+  source = "../../modules/sqs"
+  name   = "${local.name}-queue"
 }
 
 module "api_gateway" {
-  source = "../../modules/api_gateway"
-  name   = "${local.name}-api-gateway"
+  source               = "../../modules/api_gateway"
+  name                 = "${local.name}-api-gateway"
+  lambda_uri           = module.lambda.invoke_arn
+  lambda_function_name = module.lambda.name
+  stage_name           = "dev"
 }

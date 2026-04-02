@@ -8,6 +8,11 @@ output "arn" {
   value       = aws_lambda_function.my_lambda.arn
 }
 
+output "invoke_arn" {
+  description = "The invoke ARN of the Lambda function"
+  value       = aws_lambda_function.my_lambda.invoke_arn
+}
+
 output "role_arn" {
   description = "The IAM role for the Lambda function"
   value       = aws_iam_role.role.arn
