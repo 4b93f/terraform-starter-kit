@@ -12,12 +12,22 @@ module "dynamodb" {
   name   = "${local.name}-table"
 }
 
-module "lambda" {
+module "lambda_health" {
   source       = "../../modules/lambda"
-  name         = "${local.name}-lambda"
-  handler      = "index.handler"
+  name         = "${local.name}-lambda-health"
+  handler      = "health.handler"
   runtime      = "python3.13"
-  zip_filename = "./src/dummy.zip"
+  zip_filename = "./src/health.zip"
+}
+
+module "lambda_test" {
+  source        = "../../modules/lambda"
+  name          = "${local.name}-lambda-test"
+  handler       = "index.handler"
+  runtime       = "python3.13"
+  zip_filename  = "./src/dummy.zip"
+  sqs_queue_arn = module.sqs.arn
+  sqs_url       = module.sqs.url
 }
 
 module "sqs" {
@@ -26,9 +36,11 @@ module "sqs" {
 }
 
 module "api_gateway" {
-  source               = "../../modules/api_gateway"
-  name                 = "${local.name}-api-gateway"
-  lambda_uri           = module.lambda.invoke_arn
-  lambda_function_name = module.lambda.name
-  stage_name           = "dev"
+  source                     = "../../modules/api_gateway"
+  name                       = "${local.name}-api-gateway"
+  stage_name                 = "dev"
+  health_lambda_uri          = module.lambda_health.invoke_arn
+  health_lambda_function_name = module.lambda_health.name
+  test_lambda_uri            = module.lambda_test.invoke_arn
+  test_lambda_function_name  = module.lambda_test.name
 }

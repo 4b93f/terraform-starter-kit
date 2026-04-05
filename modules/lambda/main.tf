@@ -5,6 +5,15 @@ resource "aws_lambda_function" "my_lambda" {
   filename         = var.zip_filename
   role             = aws_iam_role.role.arn
   source_code_hash = filebase64sha256(var.zip_filename)
+
+  dynamic "environment" {
+    for_each = var.sqs_url != null ? [1] : [] // Only include environment variables if SQS URL is provided
+    content {
+      variables = {
+        SQS_URL = var.sqs_url
+      }
+    }
+  }
 }
 
 resource "aws_iam_role" "role" {
@@ -21,6 +30,26 @@ resource "aws_iam_role" "role" {
         Principal = {
           Service = "lambda.amazonaws.com"
         }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "sqs_send" {
+  count = var.sqs_queue_arn != null ? 1 : 0 // Optional creation based on whether SQS ARN is provided
+  name  = "${var.name}-sqs-send-policy"
+  role  = aws_iam_role.role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sqs:SendMessage",
+          "sqs:SendMessageBatch"
+        ]
+        Effect   = "Allow"
+        Resource = var.sqs_queue_arn
       },
     ]
   })

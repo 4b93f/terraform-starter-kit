@@ -23,3 +23,15 @@ variable "role_tag" {
   type        = map(string)
   default     = {}
 }
+
+variable "sqs_queue_arn" {
+  description = "The ARN of the SQS queue that the Lambda function will send messages to"
+  type        = string
+  default     = null
+}
+
+variable "sqs_url" {
+  description = "The URL of the SQS queue that the Lambda function will send messages to"
+  type        = string
+  default     = null
+}
