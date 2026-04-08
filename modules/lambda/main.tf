@@ -7,7 +7,7 @@ resource "aws_lambda_function" "my_lambda" {
   source_code_hash = filebase64sha256(var.zip_filename)
 
   dynamic "environment" {
-    for_each = var.sqs_url != null ? [1] : [] // Only include environment variables if SQS URL is provided
+    for_each = var.enable_sqs ? [1] : []
     content {
       variables = {
         SQS_URL = var.sqs_url
@@ -36,7 +36,7 @@ resource "aws_iam_role" "role" {
 }
 
 resource "aws_iam_role_policy" "sqs_send" {
-  count = var.sqs_queue_arn != null ? 1 : 0 // Optional creation based on whether SQS ARN is provided
+  count = var.enable_sqs ? 1 : 0
   name  = "${var.name}-sqs-send-policy"
   role  = aws_iam_role.role.id
 

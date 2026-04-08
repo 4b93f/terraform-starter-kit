@@ -1,5 +1,5 @@
 locals {
-  name = "dev-forbee"
+  name = var.project_name
 }
 
 module "s3" {
@@ -26,6 +26,7 @@ module "lambda_test" {
   handler       = "index.handler"
   runtime       = "python3.13"
   zip_filename  = "./src/dummy.zip"
+  enable_sqs    = true
   sqs_queue_arn = module.sqs.arn
   sqs_url       = module.sqs.url
 }

@@ -24,6 +24,12 @@ variable "role_tag" {
   default     = {}
 }
 
+variable "enable_sqs" {
+  description = "Whether to enable SQS permissions for this Lambda"
+  type        = bool
+  default     = false
+}
+
 variable "sqs_queue_arn" {
   description = "The ARN of the SQS queue that the Lambda function will send messages to"
   type        = string
