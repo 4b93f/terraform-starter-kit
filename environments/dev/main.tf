@@ -39,7 +39,7 @@ module "sqs" {
 module "api_gateway" {
   source                     = "../../modules/api_gateway"
   name                       = "${local.name}-api-gateway"
-  stage_name                 = "dev"
+  stage_name                 = var.stage_name
   health_lambda_uri          = module.lambda_health.invoke_arn
   health_lambda_function_name = module.lambda_health.name
   test_lambda_uri            = module.lambda_test.invoke_arn

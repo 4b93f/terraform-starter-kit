@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "my_table" {
+resource "aws_dynamodb_table" "table" {
   name         = var.name
   hash_key     = "id"
   billing_mode = "PAY_PER_REQUEST"

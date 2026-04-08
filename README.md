@@ -1,15 +1,15 @@
-# terraform-starter-kit (WIP)
+# terraform-starter-kit
 
 A Terraform starter kit for deploying a serverless AWS stack.
 
 ## Stack
 
-- **API Gateway** — REST API with `/health` and `/test` endpoints
-- **Lambda (health)** — returns 200, used as a health check
-- **Lambda (test)** — sends a message to SQS
+- **API Gateway** — REST API with `/health` and `/test` endpoints and deployment triggers
+- **Lambda (health)** — returns 200, used as a health check, CloudWatch logs enabled
+- **Lambda (test)** — sends a message to SQS, CloudWatch logs enabled, optional SQS IAM policy
 - **SQS** — Message queue fed by the test Lambda
-- **DynamoDB** — NoSQL table
-- **S3** — Storage bucket
+- **DynamoDB** — NoSQL table with on-demand (PAY_PER_REQUEST) billing
+- **S3** — Storage bucket with versioning, AES256 encryption, and public access blocked
 
 ## Architecture
 
@@ -23,7 +23,6 @@ GET /test    →  lambda_test    →  SQS queue
 ```
 .
 ├── bootstrap.py           # One-time script to create S3 remote state bucket on AWS
-├── deploy.py              # Interactive CLI to deploy modules
 ├── environments/
 │   └── dev/
 │       ├── main.tf        # Module composition and local name
@@ -99,12 +98,17 @@ cd environments/dev
 terraform init
 ```
 
-5. Deploy to LocalStack:
+5. Initialize tflocal:
+```bash
+tflocal init -reconfigure
+```
+
+6. Deploy to LocalStack:
 ```bash
 tflocal apply
 ```
 
-6. Test the API:
+7. Test the API:
 ```bash
 curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/health
 curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/test
@@ -134,5 +138,5 @@ locals {
 Set `project_name` via `terraform.tfvars` or `-var`:
 
 ```bash
-terraform apply -var="project_name=my-project"
+tflocal apply -var="project_name=my-project"
 ```

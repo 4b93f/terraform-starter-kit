@@ -1,4 +1,4 @@
-resource "aws_lambda_function" "my_lambda" {
+resource "aws_lambda_function" "lambda" {
   function_name    = var.name
   handler          = var.handler
   runtime          = var.runtime
@@ -31,6 +31,26 @@ resource "aws_iam_role" "role" {
           Service = "lambda.amazonaws.com"
         }
       },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "cloudwatch_logs" {
+  name = "${var.name}-cloudwatch-logs-policy"
+  role = aws_iam_role.role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      }
     ]
   })
 }

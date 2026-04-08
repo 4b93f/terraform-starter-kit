@@ -1,4 +1,9 @@
-output "bucket_name" {
-  description = "Arn of the bucket created"
-  value       = aws_s3_bucket.my_bucket.arn
+output "name" {
+  description = "Name of the S3 bucket created"
+  value       = aws_s3_bucket.bucket.id
+}
+
+output "arn" {
+  description = "ARN of the S3 bucket created"
+  value       = aws_s3_bucket.bucket.arn
 }
