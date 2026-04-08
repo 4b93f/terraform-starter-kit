@@ -44,32 +44,33 @@ GET /test    →  lambda_test    →  SQS queue
 
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/install)
+- [Terraform >= 1.9](https://developer.hashicorp.com/terraform/install)
 - AWS account with credentials configured (`aws configure`)
 - Python 3.10+ with dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Getting Started (real AWS)
+## Remote State
 
-1. Create the remote state bucket (once):
+State is stored in an S3 bucket on AWS. This keeps sensitive data out of the repo and allows team collaboration.
+
+> The state file contains resource IDs, IPs, and secrets — never commit it to git.
+
+Create the bucket once before your first deploy:
 ```bash
 python3 bootstrap.py
 ```
 
-2. Initialize Terraform:
+## Getting Started (real AWS)
+
 ```bash
 cd environments/dev
 terraform init
-```
-
-3. Deploy:
-```bash
 terraform apply
 ```
 
-4. Test the API:
+Test the API:
 ```bash
 curl $(terraform output -raw api_gateway_url)/health
 curl $(terraform output -raw api_gateway_url)/test
@@ -77,42 +78,16 @@ curl $(terraform output -raw api_gateway_url)/test
 
 ## Local Development (LocalStack)
 
-State is stored on real AWS S3, resources are deployed to LocalStack.
+`tflocal` deploys resources to LocalStack and automatically redirects state to LocalStack S3 — state is ephemeral and resets when LocalStack restarts. This is expected for local dev.
 
-> **Why store state outside the repo?** The Terraform state file contains sensitive data (resource IDs, IPs, secrets) and should never be committed to git. More importantly, storing it remotely allows multiple people to work on the same infrastructure without conflicts, as S3 acts as a single source of truth, and everyone always plans and applies against the same state.
-
-1. Install dependencies:
-```bash
-pip install terraform-local
-```
-
-2. Start LocalStack:
 ```bash
 localstack start
-```
-
-3. Create the remote state bucket (once):
-```bash
-python3 bootstrap.py
-```
-
-4. Initialize Terraform (use `terraform`, not `tflocal`, to set up the real AWS S3 backend):
-```bash
 cd environments/dev
-terraform init
-```
-
-5. Initialize tflocal:
-```bash
 tflocal init -reconfigure
-```
-
-6. Deploy to LocalStack:
-```bash
 tflocal apply
 ```
 
-7. Test the API:
+Test the API:
 ```bash
 curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/health
 curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/test
@@ -131,7 +106,7 @@ curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/test
 
 ## Naming
 
-All resource names are derived from a single `local.name` value in `environments/dev/main.tf`:
+All resource names are derived from a single `local.name` in `environments/dev/main.tf`:
 
 ```hcl
 locals {
@@ -139,8 +114,9 @@ locals {
 }
 ```
 
-Set `project_name` via `terraform.tfvars` or `-var`:
-
+Override via `-var`:
 ```bash
+terraform apply -var="project_name=my-project"
+# or for LocalStack:
 tflocal apply -var="project_name=my-project"
 ```
