@@ -22,18 +22,16 @@ GET /test    →  lambda_test    →  SQS queue
 
 ```
 .
-├── bootstrap.py           # One-time script to create S3 remote state bucket on AWS
+├── bootstrap.py           # Optional: create an S3 remote state bucket on AWS
 ├── environments/
 │   └── dev/
 │       ├── main.tf        # Module composition and local name
 │       ├── outputs.tf     # Exposed outputs (API URL, Lambda names, SQS URL)
-│       ├── provider.tf    # AWS provider, Terraform version, S3 backend
+│       ├── provider.tf    # AWS provider and Terraform version constraint
 │       ├── variables.tf
 │       └── src/
 │           ├── health.py  # Health Lambda code
-│           ├── health.zip # Health Lambda deployment package
-│           ├── index.py   # Test Lambda code
-│           └── dummy.zip  # Test Lambda deployment package
+│           └── index.py   # Test Lambda code
 └── modules/
     ├── api_gateway/       # REST API, /health and /test routes, Lambda integrations, stage
     ├── lambda/            # Lambda function + IAM role (SQS policy optional)
@@ -51,15 +49,14 @@ GET /test    →  lambda_test    →  SQS queue
 pip install -r requirements.txt
 ```
 
-## Remote State
+## Build Lambda packages
 
-State is stored in an S3 bucket on AWS. This keeps sensitive data out of the repo and allows team collaboration.
+Lambda zip files are gitignored and must be built before deploying:
 
-> The state file contains resource IDs, IPs, and secrets — never commit it to git.
-
-Create the bucket once before your first deploy:
 ```bash
-python3 bootstrap.py
+cd environments/dev/src
+zip health.zip health.py
+zip dummy.zip index.py
 ```
 
 ## Getting Started (real AWS)
@@ -70,6 +67,8 @@ terraform init
 terraform apply
 ```
 
+State is stored locally in `terraform.tfstate`. If you need remote state for team use, run `bootstrap.py` to create an S3 bucket and follow the printed instructions.
+
 Test the API:
 ```bash
 curl $(terraform output -raw api_gateway_url)/health
@@ -78,13 +77,38 @@ curl $(terraform output -raw api_gateway_url)/test
 
 ## Local Development (LocalStack)
 
-`tflocal` deploys resources to LocalStack and automatically redirects state to LocalStack S3 — state is ephemeral and resets when LocalStack restarts. This is expected for local dev.
+LocalStack lets you test the stack locally without an AWS account. It is intended for testing purposes only — state is ephemeral and resets when deleted.
+
+LocalStack endpoints are configured via `environments/dev/override.tf`, which is gitignored. Create it before your first local run:
+
+```hcl
+provider "aws" {
+  access_key                  = "test"
+  secret_key                  = "test"
+  region                      = "eu-west-1"
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
+  s3_use_path_style           = true
+
+  endpoints {
+    apigateway     = "http://localhost:4566"
+    lambda         = "http://localhost:4566"
+    s3             = "http://localhost:4566"
+    sqs            = "http://localhost:4566"
+    dynamodb       = "http://localhost:4566"
+    iam            = "http://localhost:4566"
+    sts            = "http://localhost:4566"
+    cloudwatchlogs = "http://localhost:4566"
+  }
+}
+```
 
 ```bash
 localstack start
 cd environments/dev
-tflocal init -reconfigure
-tflocal apply
+terraform init
+terraform apply
 ```
 
 Test the API:
@@ -93,7 +117,7 @@ curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/health
 curl http://localhost:4566/restapis/<API_ID>/dev/_user_request_/test
 ```
 
-> Get the API ID from `tflocal output api_gateway_url`
+> Get the API ID from `terraform output api_gateway_url`
 
 ## Outputs
 
@@ -117,6 +141,4 @@ locals {
 Override via `-var`:
 ```bash
 terraform apply -var="project_name=my-project"
-# or for LocalStack:
-tflocal apply -var="project_name=my-project"
 ```
