@@ -29,6 +29,7 @@ GET /test    →  lambda_test    →  SQS queue
 │       ├── outputs.tf     # Exposed outputs (API URL, Lambda names, SQS URL)
 │       ├── provider.tf    # AWS provider and Terraform version constraint
 │       ├── variables.tf
+│       ├── override.tf.example  # LocalStack provider override template
 │       └── src/
 │           ├── health.py  # Health Lambda code
 │           └── index.py   # Test Lambda code
@@ -79,29 +80,10 @@ curl $(terraform output -raw api_gateway_url)/test
 
 LocalStack lets you test the stack locally without an AWS account. It is intended for testing purposes only — state is ephemeral and resets when deleted.
 
-LocalStack endpoints are configured via `environments/dev/override.tf`, which is gitignored. Create it before your first local run:
+LocalStack endpoints are configured via `environments/dev/override.tf`, which is gitignored. Copy the example before your first local run:
 
-```hcl
-provider "aws" {
-  access_key                  = "test"
-  secret_key                  = "test"
-  region                      = "eu-west-1"
-  skip_credentials_validation = true
-  skip_metadata_api_check     = true
-  skip_requesting_account_id  = true
-  s3_use_path_style           = true
-
-  endpoints {
-    apigateway     = "http://localhost:4566"
-    lambda         = "http://localhost:4566"
-    s3             = "http://localhost:4566"
-    sqs            = "http://localhost:4566"
-    dynamodb       = "http://localhost:4566"
-    iam            = "http://localhost:4566"
-    sts            = "http://localhost:4566"
-    cloudwatchlogs = "http://localhost:4566"
-  }
-}
+```bash
+cp environments/dev/override.tf.example environments/dev/override.tf
 ```
 
 ```bash
