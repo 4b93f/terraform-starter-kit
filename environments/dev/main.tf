@@ -25,7 +25,7 @@ module "lambda_test" {
   name          = "${local.name}-lambda-test"
   handler       = "index.handler"
   runtime       = "python3.13"
-  zip_filename  = "./src/dummy.zip"
+  zip_filename  = "./src/test.zip"
   enable_sqs    = true
   sqs_queue_arn = module.sqs.arn
   sqs_url       = module.sqs.url
@@ -37,11 +37,11 @@ module "sqs" {
 }
 
 module "api_gateway" {
-  source                     = "../../modules/api_gateway"
-  name                       = "${local.name}-api-gateway"
-  stage_name                 = var.stage_name
-  health_lambda_uri          = module.lambda_health.invoke_arn
+  source                      = "../../modules/api_gateway"
+  name                        = "${local.name}-api-gateway"
+  stage_name                  = var.stage_name
+  health_lambda_uri           = module.lambda_health.invoke_arn
   health_lambda_function_name = module.lambda_health.name
-  test_lambda_uri            = module.lambda_test.invoke_arn
-  test_lambda_function_name  = module.lambda_test.name
+  test_lambda_uri             = module.lambda_test.invoke_arn
+  test_lambda_function_name   = module.lambda_test.name
 }

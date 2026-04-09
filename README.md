@@ -52,7 +52,7 @@ Lambda zip files are gitignored and must be built before deploying:
 ```bash
 cd environments/dev/src
 zip health.zip health.py
-zip dummy.zip index.py
+zip test.zip index.py
 ```
 
 ## Getting Started (real AWS)
