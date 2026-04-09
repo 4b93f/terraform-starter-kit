@@ -44,10 +44,6 @@ GET /test    →  lambda_test    →  SQS queue
 
 - [Terraform >= 1.9](https://developer.hashicorp.com/terraform/install)
 - AWS account with credentials configured (`aws configure`)
-- Python 3.10+ with dependencies:
-```bash
-pip install -r requirements.txt
-```
 
 ## Build Lambda packages
 
