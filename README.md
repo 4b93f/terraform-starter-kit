@@ -22,7 +22,6 @@ GET /test    →  lambda_test    →  SQS queue
 
 ```
 .
-├── bootstrap.py           # Optional: create an S3 remote state bucket on AWS
 ├── environments/
 │   └── dev/
 │       ├── main.tf        # Module composition and local name
@@ -68,7 +67,7 @@ terraform init
 terraform apply
 ```
 
-State is stored locally in `terraform.tfstate`. If you need remote state for team use, run `bootstrap.py` to create an S3 bucket and follow the printed instructions.
+State is stored locally in `terraform.tfstate`.
 
 Test the API:
 ```bash
